@@ -29,7 +29,7 @@ pipeline {
         stage ('unit test') {
             steps {
                 container ('maven') {
-                    sh 'mvn clean  -gs `pwd`/configuration/settings.xml test'
+                    sh 'mvn clean test'
                 }
             }
         }
@@ -37,7 +37,7 @@ pipeline {
         stage ('build & push') {
             steps {
                 container ('maven') {
-                    sh 'mvn  -Dmaven.test.skip=true -gs `pwd`/configuration/settings.xml clean package'
+                    sh 'mvn clean package -DskipTests'
                     sh 'docker build -f Dockerfile-online -t $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER .'
                     withCredentials([usernamePassword(passwordVariable : 'DOCKER_PASSWORD' ,usernameVariable : 'DOCKER_USERNAME' ,credentialsId : "$DOCKER_CREDENTIAL_ID" ,)]) {
                         sh 'echo "$DOCKER_PASSWORD" | docker login $REGISTRY -u "$DOCKER_USERNAME" --password-stdin'
@@ -65,7 +65,15 @@ pipeline {
           }
           steps {
             input(id: 'deploy-to-dev', message: 'deploy to dev?')
-            kubernetesDeploy(configs: 'deploy/dev-ol/**', enableConfigSubstitution: true, kubeconfigId: "$KUBECONFIG_CREDENTIAL_ID")
+            container ('maven') {
+                withCredentials([
+                    kubeconfigFile(
+                    credentialsId: env.KUBECONFIG_CREDENTIAL_ID,
+                    variable: 'KUBECONFIG')
+                    ]) {
+                    sh 'envsubst < deploy/dev-all-in-one/devops-sample.yaml | kubectl apply -f -'
+                }
+            }
           }
         }
         stage('push with tag'){
@@ -96,7 +104,15 @@ pipeline {
           }
           steps {
             input(id: 'deploy-to-production', message: 'deploy to production?')
-            kubernetesDeploy(configs: 'deploy/prod-ol/**', enableConfigSubstitution: true, kubeconfigId: "$KUBECONFIG_CREDENTIAL_ID")
+            container ('maven') {
+                withCredentials([
+                    kubeconfigFile(
+                    credentialsId: env.KUBECONFIG_CREDENTIAL_ID,
+                    variable: 'KUBECONFIG')
+                    ]) {
+                    sh 'envsubst < deploy/prod-all-in-one/devops-sample.yaml | kubectl apply -f -'
+                }
+            }
           }
         }
     }

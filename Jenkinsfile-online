@@ -11,11 +11,11 @@ pipeline {
 
     environment {
         DOCKER_CREDENTIAL_ID = 'dockerhub-id'
-        GITHUB_CREDENTIAL_ID = 'github-id'
+        GITHUB_CREDENTIAL_ID = 'ks-devops'
         KUBECONFIG_CREDENTIAL_ID = 'demo-kubeconfig'
-        REGISTRY = 'docker.io'
-        DOCKERHUB_NAMESPACE = 'docker_username'
-        GITHUB_ACCOUNT = 'kubesphere'
+        REGISTRY = 'registry.cn-shanghai.aliyuncs.com'
+        DOCKERHUB_NAMESPACE = 'zzehong'
+        GITHUB_ACCOUNT = 'zhengzehong331'
         APP_NAME = 'devops-java-sample'
     }
 
@@ -49,7 +49,7 @@ pipeline {
 
         stage('push latest'){
            when{
-             branch 'master'
+             branch 'gitlab-demo'
            }
            steps{
                 container ('maven') {
@@ -61,7 +61,7 @@ pipeline {
 
         stage('deploy to dev') {
           when{
-            branch 'master'
+            branch 'gitlab-demo'
           }
           steps {
             input(id: 'deploy-to-dev', message: 'deploy to dev?')

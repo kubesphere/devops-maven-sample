@@ -1,4 +1,4 @@
-FROM openjdk:openjdk-8-jre-alpine
+FROM openjdk:8u92-jdk-alpine
 
 WORKDIR /home
 

@@ -13,6 +13,7 @@ public class HelloWorldController {
 
     @RequestMapping("/")
     public String sayHello() {
+        System.out.println("test pr");
         return "Really appreciate your star, that's the power of our life.";
     }
 }

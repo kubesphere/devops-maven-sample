@@ -1,10 +1,9 @@
 approvers:
-    - linuxsuren
+    - zheng1
+    - stoneshi-yunify
     - yudong2015
-    - chilianyi
 
 reviewers:
-    - runzexia #oncall
-    - shaowenchen
+    - zheng1
+    - stoneshi-yunify
     - yudong2015
-    - chilianyi

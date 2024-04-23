@@ -12,7 +12,6 @@ pipeline {
     environment {
         DOCKER_CREDENTIAL_ID = 'dockerhub-id'
         GITHUB_CREDENTIAL_ID = 'github-id'
-        KUBECONFIG_CREDENTIAL_ID = 'demo-kubeconfig'
         REGISTRY = 'docker.io'
         DOCKERHUB_NAMESPACE = 'docker_username'
         GITHUB_ACCOUNT = 'kubesphere'
@@ -59,23 +58,6 @@ pipeline {
            }
         }
 
-        stage('deploy to dev') {
-          when{
-            branch 'master'
-          }
-          steps {
-            input(id: 'deploy-to-dev', message: 'deploy to dev?')
-            container ('maven') {
-                withCredentials([
-                    kubeconfigFile(
-                    credentialsId: env.KUBECONFIG_CREDENTIAL_ID,
-                    variable: 'KUBECONFIG')
-                    ]) {
-                    sh 'envsubst < deploy/dev-all-in-one/devops-sample.yaml | kubectl apply -f -'
-                }
-            }
-          }
-        }
         stage('push with tag'){
           when{
             expression{
@@ -94,25 +76,6 @@ pipeline {
                 sh 'docker tag  $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:$TAG_NAME '
                 sh 'docker push  $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:$TAG_NAME '
           }
-          }
-        }
-        stage('deploy to production') {
-          when{
-            expression{
-              return params.TAG_NAME =~ /v.*/
-            }
-          }
-          steps {
-            input(id: 'deploy-to-production', message: 'deploy to production?')
-            container ('maven') {
-                withCredentials([
-                    kubeconfigFile(
-                    credentialsId: env.KUBECONFIG_CREDENTIAL_ID,
-                    variable: 'KUBECONFIG')
-                    ]) {
-                    sh 'envsubst < deploy/prod-all-in-one/devops-sample.yaml | kubectl apply -f -'
-                }
-            }
           }
         }
     }

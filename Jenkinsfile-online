@@ -21,6 +21,12 @@ pipeline {
     }
 
     stages {
+        stage ('checkout scm') {
+            steps {
+                checkout(scm)
+            }
+        }
+
         stage('unit test') {
             steps {
                 container('maven') {
@@ -69,26 +75,6 @@ pipeline {
             }
         }
 
-        stage('deploy to dev') {
-            when {
-                branch 'master'
-            }
-            steps {
-                input(id: 'deploy-to-dev', message: 'deploy to dev?')
-                container("maven") {
-                    withCredentials([
-                            kubeconfigFile(
-                                    credentialsId: env.KUBECONFIG_CREDENTIAL_ID,
-                                    variable: 'KUBECONFIG')
-                    ]) {
-                        sh '''
-                    envsubst < deploy/dev-ol/devops-sample-svc.yaml | kubectl apply -f -
-                    envsubst < deploy/dev-ol/devops-sample.yaml | kubectl apply -f -
-                  '''
-                    }
-                }
-            }
-        }
         stage('push with tag') {
             when {
                 expression {
@@ -106,28 +92,6 @@ pipeline {
                     }
                     sh 'docker tag $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:$TAG_NAME '
                     sh 'docker push $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:$TAG_NAME '
-                }
-            }
-        }
-        stage('deploy to production') {
-            when {
-                expression {
-                    return params.TAG_NAME =~ /v.*/
-                }
-            }
-            steps {
-                input(id: 'deploy-to-production', message: 'deploy to production?')
-                container("maven") {
-                    withCredentials([
-                            kubeconfigFile(
-                                    credentialsId: env.KUBECONFIG_CREDENTIAL_ID,
-                                    variable: 'KUBECONFIG')
-                    ]) {
-                        sh '''
-                            envsubst < deploy/prod-ol/devops-sample-svc.yaml | kubectl apply -f -
-                            envsubst < deploy/prod-ol/devops-sample.yaml | kubectl apply -f -
-                        '''
-                    }
                 }
             }
         }

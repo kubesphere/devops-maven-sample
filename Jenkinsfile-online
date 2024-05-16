@@ -16,7 +16,7 @@ pipeline {
         REGISTRY = 'docker.io'
         DOCKERHUB_NAMESPACE = 'docker_username' // change me
         GITHUB_ACCOUNT = 'kubesphere' // change me
-        APP_NAME = 'devops-java-sample'
+        APP_NAME = 'devops-maven-sample'
         SONAR_CREDENTIAL_ID = 'sonar-token'
     }
 
@@ -102,7 +102,7 @@ pipeline {
                         sh 'git config --global user.email "kubesphere@yunify.com" '
                         sh 'git config --global user.name "kubesphere" '
                         sh 'git tag -a $TAG_NAME -m "$TAG_NAME" '
-                        sh 'git push http://$GIT_USERNAME:$GIT_PASSWORD@github.com/$GITHUB_ACCOUNT/devops-java-sample.git --tags --ipv4'
+                        sh 'git push http://$GIT_USERNAME:$GIT_PASSWORD@github.com/$GITHUB_ACCOUNT/devops-maven-sample.git --tags --ipv4'
                     }
                     sh 'docker tag $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BRANCH_NAME-$BUILD_NUMBER $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:$TAG_NAME '
                     sh 'docker push $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:$TAG_NAME '
